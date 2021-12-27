@@ -65,7 +65,7 @@ function get_user( req, res )
 		res.status( StatusCodes.NOT_FOUND );
 		res.send( "No such user")
 		return;
-	}ד
+	}
 
 	res.send(  JSON.stringify( user) );   
 }
