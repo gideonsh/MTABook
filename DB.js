@@ -5,6 +5,10 @@ export let messages = [];
 export let users = [];
 export let posts = [];
 
+export let messagesID = {value: 1};
+export let usersID = {value: 1};
+export let postsID = {value: 1};
+
  export async function readData() {
     if (fs.existsSync('./messages.json')) {
         const data = await fsp.readFile('./messages.json', "utf8");
@@ -14,15 +18,12 @@ export let posts = [];
     if (fs.existsSync('./users.json')) {
         const data = await fsp.readFile('./users.json', "utf8");
         users = JSON.parse(data)
-        } 
+    } 
 
     if (fs.existsSync('./posts.json')) {
         const data = await fsp.readFile('./posts.json', "utf8");
         posts = JSON.parse(data)
     } 
-    
-        saveData();
-    
 }
 
 export async function saveData() {

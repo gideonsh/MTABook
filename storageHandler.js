@@ -1,5 +1,54 @@
 
 import * as db from './DB.js'
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+
+export function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader;
+    console.log(token);
+    if (token == null) return res.sendStatus(401); 
+    console.log("in auth");
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403); 
+        req.id = user.id;
+        next();
+    })
+}
+
+export function userIsApproved(req,res,next){
+    if(users.some(user => user.id === req.id && user.userStatus === ACTIVE)){
+        next();
+    } else {
+        res.status(401).send("User is not active");
+    }
+}
+
+export async function initAdmin() {
+    {
+        if (db.users.some(user => user.id === 0)) {
+            //throw new Error("Admin already exists")
+        }
+        else {
+            const creationDate = Date.now().stringify;
+            const hash = await bcrypt.hash("123456", 10);
+            db.users.push({ id: 0, name: "gideon",email:"gideon@gmail.com", password:hash, creation:creationDate, status:"active" });
+            await db.saveData();
+        }
+    }
+}
+
+export function getDateAndTime() {
+    let date = new Date();
+    let dateAndTime = "Last Sync: " + date.getDate() + "/"
+        + (date.getMonth() + 1) + "/"
+        + date.getFullYear() + " @ "
+        + date.getHours() + ":"
+        + date.getMinutes() + ":"
+        + date.getSeconds();
+    return dateAndTime;
+}
+
 
 export default class DataHandler {
 
@@ -7,17 +56,25 @@ export default class DataHandler {
         if(db.users.some(user => user.email === email)) {
             return db.users.filter(user => user.email === email)[0];
         } else {
-            // there is no user like this
+            console.log("there is no matching user");
+        }
+    }
+
+    async userExist(email, password) {
+        if(db.users.some(user => user.email === email)) {
+            return true;
+        } else {
+            return false;
         }
     }
 
     async addUser(name,email,password){
-        const id = 2 //generateId();
+        const id = db.usersID++; 
         if(db.users.some(user => user.email === email)){
             throw new Error("email already exist");
         }
-        //password = hashPaswword(password);
-        const date = 2; //getDate();
+        
+        const date = Date.now(); 
         const status = "created";
         db.users.push({id,name,email,password,date,status});
         await db.saveData();
@@ -46,14 +103,14 @@ export default class DataHandler {
         if(db.messages.some(msg => msg.id === id)) {
             return db.messages.filter(msg => msg.id === id)[0];
         } else {
-            // there is no message like this
+            console.log("there is no matching message");
         }
     }
 
     async addMessage(msgText){
-        const id = 2; //generateId();
-        const date = 2; //getDate();
-        const time = 2; //getTime();
+        const id = db.messagesID++;
+        const date = 2; 
+        const time = 2; 
         
         db.messages.push({id,msgText,date,time});
         await db.saveData();
@@ -81,14 +138,14 @@ export default class DataHandler {
         if(db.posts.some(post => post.id === id)) {
             return db.posts.filter(post => post.id === id)[0];
         } else {
-            // there is no post like this
+            console.log("there is no matching post");
         }
     }
 
     async addPost(postText){
-        const id = 2; //generateId();
-        const date = 2; //getDate();
-        const time = 2; //getTime();
+        const id = db.postsID++; 
+        const date = 2; 
+        const time = 2; 
         
         db.posts.push({id,postText,date,time});
         await db.saveData();
